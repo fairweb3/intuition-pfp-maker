@@ -1,119 +1,106 @@
-const canvas = new fabric.Canvas('editor-canvas', {
-  selection: false,
-  preserveObjectStacking: true
+// script.js
+
+const canvas = new fabric.Canvas("c", {
+  preserveObjectStacking: true,
+  backgroundColor: "#111",
 });
 
-let pfpImage = null;
-let glassesImage = null;
-let uploadedSize = { width: 512, height: 512 };
+let uploadedImg = null;
+let glassesImg = null;
 
-// Upload PFP
-document.getElementById('upload-image').addEventListener('change', (e) => {
+function scaleToFit(img, targetWidth, targetHeight) {
+  const scaleX = targetWidth / img.width;
+  const scaleY = targetHeight / img.height;
+  return Math.min(scaleX, scaleY);
+}
+
+document.getElementById("upload").addEventListener("change", function (e) {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = function (f) {
     fabric.Image.fromURL(f.target.result, function (img) {
-      // Remove previous
-      if (pfpImage) canvas.remove(pfpImage);
-      if (glassesImage) canvas.remove(glassesImage);
+      if (uploadedImg) canvas.remove(uploadedImg);
+      uploadedImg = img;
 
-      // Match canvas to uploaded image
-      uploadedSize = { width: img.width, height: img.height };
-      canvas.setWidth(img.width);
-      canvas.setHeight(img.height);
-
+      // Fit image to canvas area (contain)
+      const scale = scaleToFit(img, canvas.getWidth(), canvas.getHeight());
+      img.scale(scale);
       img.set({
+        left: canvas.getWidth() / 2,
+        top: canvas.getHeight() / 2,
+        originX: "center",
+        originY: "center",
         selectable: true,
-        hasControls: false,
         hasBorders: false,
-        lockRotation: true,
-        lockScalingFlip: true
+        hasControls: false,
       });
-
-      pfpImage = img;
-      canvas.add(pfpImage);
-      canvas.sendToBack(pfpImage);
-
-      loadGlasses(); // auto-load glasses after PFP
+      canvas.add(img);
+      canvas.sendToBack(img);
+      canvas.renderAll();
     });
   };
   reader.readAsDataURL(file);
 });
 
-// Load & add glasses overlay
-function loadGlasses() {
-  fabric.Image.fromURL('assets/intuition-glasses.png', function (img) {
-    img.set({
-      left: canvas.width / 2 - img.width / 4,
-      top: canvas.height / 2 - img.height / 4,
-      hasControls: true,
-      hasBorders: true,
-      cornerStyle: 'circle',
-      borderColor: '#aaa',
-      cornerColor: '#aaa',
-      transparentCorners: false,
-      rotatingPointOffset: 20
+document.getElementById("add-glasses").addEventListener("click", function () {
+  if (glassesImg) {
+    canvas.remove(glassesImg);
+    glassesImg = null;
+    canvas.renderAll();
+  }
+
+  fabric.Image.fromURL("assets/intuition-glasses.png", function (img) {
+    glassesImg = img;
+    glassesImg.set({
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 2,
+      originX: "center",
+      originY: "center",
+      hasRotatingPoint: true,
     });
 
-    img.scale(0.5);
-    glassesImage = img;
-    canvas.add(glassesImage);
-    canvas.setActiveObject(glassesImage);
+    glassesImg.scale(0.5);
+    canvas.add(glassesImg);
+    canvas.setActiveObject(glassesImg);
+    canvas.renderAll();
   });
-}
+});
 
-// Reset
-document.getElementById('reset-btn').addEventListener('click', () => {
+document.getElementById("reset").addEventListener("click", function () {
   canvas.clear();
-  pfpImage = null;
-  glassesImage = null;
-  canvas.setWidth(512);
-  canvas.setHeight(512);
+  canvas.backgroundColor = "#111";
+  uploadedImg = null;
+  glassesImg = null;
 });
 
-// Download clean PNG
-document.getElementById('download-btn').addEventListener('click', () => {
-  if (!pfpImage) return alert("Upload a PFP first.");
+document.getElementById("download").addEventListener("click", function () {
+  if (!uploadedImg) return;
 
-  // Temporarily remove UI
-  if (glassesImage) {
-    glassesImage.set({
-      hasBorders: false,
-      hasControls: false
-    });
-  }
-
-  canvas.discardActiveObject();
-  canvas.renderAll();
-
-  const dataURL = canvas.toDataURL({
-    format: 'png',
-    left: 0,
-    top: 0,
-    width: uploadedSize.width,
-    height: uploadedSize.height,
-    multiplier: 1
+  // Create temp canvas with same size as original uploaded image
+  const exportCanvas = new fabric.StaticCanvas(null, {
+    width: uploadedImg.getScaledWidth(),
+    height: uploadedImg.getScaledHeight(),
   });
 
-  const link = document.createElement('a');
-  link.href = dataURL;
-  link.download = 'intuition-pfp.png';
+  const cloneItems = canvas.getObjects().map((obj) => {
+    const clone = fabric.util.object.clone(obj);
+    const scale = uploadedImg.getScaledWidth() / canvas.getWidth();
+    clone.scale(clone.scaleX * scale);
+    clone.left = (clone.left - canvas.getWidth() / 2) * scale + uploadedImg.getScaledWidth() / 2;
+    clone.top = (clone.top - canvas.getHeight() / 2) * scale + uploadedImg.getScaledHeight() / 2;
+    return clone;
+  });
+
+  exportCanvas.add(...cloneItems);
+  exportCanvas.renderAll();
+
+  const link = document.createElement("a");
+  link.href = exportCanvas.toDataURL({
+    format: "png",
+    enableRetinaScaling: true,
+  });
+  link.download = "intuition-pfp.png";
   link.click();
-
-  // Restore UI handles
-  if (glassesImage) {
-    glassesImage.set({
-      hasBorders: true,
-      hasControls: true
-    });
-  }
-
-  canvas.renderAll();
-});
-
-// Fake Mint button
-document.getElementById('mint-btn').addEventListener('click', () => {
-  alert('🕯 Ritual minted to the void... (fake)');
 });
