@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Intuition PFP Maker</title>
 
-  <!-- Embedded readable cult-style font (IM Fell English) -->
+  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
-
-  <!-- Main styles -->
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -24,10 +23,8 @@
     </div>
 
     <div class="controls">
-      <label class="custom-button">
-        <input type="file" id="upload-image" accept="image/*" hidden />
-        <span>⛧ Upload</span>
-      </label>
+      <label for="upload-image" class="custom-button">⛧ Upload</label>
+      <input type="file" id="upload-image" accept="image/*" hidden />
 
       <button id="reset-btn" class="custom-button">⛒ Reset</button>
       <button id="download-btn" class="custom-button">⇩ Download</button>
@@ -39,10 +36,9 @@
     <p>Built for the cult of vision 🔮</p>
   </footer>
 
-  <!-- Fabric.js for canvas interactivity -->
+  <!-- Fabric.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-
-  <!-- Main script -->
+  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>
