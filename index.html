@@ -2,47 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Intuition PFP Maker</title>
-
-  <!-- Embedded readable cult-style font (IM Fell English) -->
-  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
-
-  <!-- Main styles -->
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 </head>
 <body>
-  <div class="background-overlay"></div>
-
-  <header>
+  <div id="wrapper">
     <h1 id="title">Intuition PFP Maker</h1>
-  </header>
 
-  <main>
-    <div id="canvas-container">
-      <canvas id="editor-canvas" width="512" height="512"></canvas>
-    </div>
-
-    <div class="controls">
-      <label class="custom-button">
-        <input type="file" id="upload-image" accept="image/*" hidden />
-        <span>⛧ Upload</span>
+    <div id="canvas-wrapper">
+      <canvas id="editor-canvas" width="600" height="600"></canvas>
+      <label for="pfp-upload" id="upload-area">
+        <input type="file" id="pfp-upload" accept="image/*" hidden />
+        Upload PFP
       </label>
-
-      <button id="reset-btn" class="custom-button">⛒ Reset</button>
-      <button id="download-btn" class="custom-button">⇩ Download</button>
-      <button id="mint-btn" class="custom-button mint">🜂 Mint NFT</button>
     </div>
-  </main>
 
-  <footer>
-    <p>Built for the cult of vision 🔮</p>
-  </footer>
+    <div id="controls">
+      <button id="reset-btn" class="button">Reset</button>
+      <button id="download-btn" class="button">Download</button>
+      <button id="mint-btn" class="button">Mint NFT</button>
+    </div>
+  </div>
 
-  <!-- Fabric.js for canvas interactivity -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-
-  <!-- Main script -->
   <script src="script.js"></script>
 </body>
 </html>
