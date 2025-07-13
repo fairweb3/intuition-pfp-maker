@@ -1,14 +1,13 @@
 const canvas = new fabric.Canvas('editor-canvas', {
   selection: false,
-  preserveObjectStacking: true,
+  preserveObjectStacking: true
 });
 
-// Global references
 let pfpImage = null;
 let glassesImage = null;
 let uploadedSize = { width: 512, height: 512 };
 
-// Handle image upload
+// Upload PFP
 document.getElementById('upload-image').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -16,62 +15,56 @@ document.getElementById('upload-image').addEventListener('change', (e) => {
   const reader = new FileReader();
   reader.onload = function (f) {
     fabric.Image.fromURL(f.target.result, function (img) {
-      // Remove existing PFP if exists
+      // Remove previous
       if (pfpImage) canvas.remove(pfpImage);
+      if (glassesImage) canvas.remove(glassesImage);
 
-      // Resize canvas to match uploaded image size
+      // Match canvas to uploaded image
       uploadedSize = { width: img.width, height: img.height };
       canvas.setWidth(img.width);
       canvas.setHeight(img.height);
 
       img.set({
-        left: 0,
-        top: 0,
         selectable: true,
-        hasBorders: false,
         hasControls: false,
+        hasBorders: false,
         lockRotation: true,
-        lockScalingFlip: true,
+        lockScalingFlip: true
       });
 
-      img.scaleToWidth(img.width);
       pfpImage = img;
-      canvas.add(img);
-      canvas.sendToBack(img);
+      canvas.add(pfpImage);
+      canvas.sendToBack(pfpImage);
 
-      loadGlasses(); // load glasses after base image
+      loadGlasses(); // auto-load glasses after PFP
     });
   };
   reader.readAsDataURL(file);
 });
 
-// Load glasses image
+// Load & add glasses overlay
 function loadGlasses() {
-  if (glassesImage) {
-    canvas.remove(glassesImage);
-  }
-
   fabric.Image.fromURL('assets/intuition-glasses.png', function (img) {
     img.set({
       left: canvas.width / 2 - img.width / 4,
       top: canvas.height / 2 - img.height / 4,
-      hasBorders: true,
       hasControls: true,
+      hasBorders: true,
       cornerStyle: 'circle',
+      borderColor: '#aaa',
+      cornerColor: '#aaa',
       transparentCorners: false,
-      borderColor: '#ccc',
-      cornerColor: '#ccc',
-      rotatingPointOffset: 20,
+      rotatingPointOffset: 20
     });
 
     img.scale(0.5);
     glassesImage = img;
-    canvas.add(img);
-    canvas.setActiveObject(img);
+    canvas.add(glassesImage);
+    canvas.setActiveObject(glassesImage);
   });
 }
 
-// Reset button
+// Reset
 document.getElementById('reset-btn').addEventListener('click', () => {
   canvas.clear();
   pfpImage = null;
@@ -80,11 +73,11 @@ document.getElementById('reset-btn').addEventListener('click', () => {
   canvas.setHeight(512);
 });
 
-// Download button
+// Download clean PNG
 document.getElementById('download-btn').addEventListener('click', () => {
   if (!pfpImage) return alert("Upload a PFP first.");
 
-  // Temporarily hide UI handles
+  // Temporarily remove UI
   if (glassesImage) {
     glassesImage.set({
       hasBorders: false,
@@ -95,15 +88,13 @@ document.getElementById('download-btn').addEventListener('click', () => {
   canvas.discardActiveObject();
   canvas.renderAll();
 
-  // Export at original PFP size
   const dataURL = canvas.toDataURL({
     format: 'png',
     left: 0,
     top: 0,
     width: uploadedSize.width,
     height: uploadedSize.height,
-    multiplier: 1,
-    enableRetinaScaling: false
+    multiplier: 1
   });
 
   const link = document.createElement('a');
@@ -111,7 +102,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
   link.download = 'intuition-pfp.png';
   link.click();
 
-  // Restore UI
+  // Restore UI handles
   if (glassesImage) {
     glassesImage.set({
       hasBorders: true,
@@ -122,7 +113,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
   canvas.renderAll();
 });
 
-// Mint button (fake animation/hover only)
+// Fake Mint button
 document.getElementById('mint-btn').addEventListener('click', () => {
-  alert('✨ Ritual submitted to the chain. (Fake Mint)');
+  alert('🕯 Ritual minted to the void... (fake)');
 });
