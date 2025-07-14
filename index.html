@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Intuition PFP Maker</title>
-
-  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -19,12 +16,14 @@
 
   <main>
     <div id="canvas-container">
-      <canvas id="editor-canvas" width="512" height="512"></canvas>
+      <canvas id="editor-canvas"></canvas>
     </div>
 
     <div class="controls">
-      <label for="upload-image" class="custom-button">⛧ Upload</label>
-      <input type="file" id="upload-image" accept="image/*" hidden />
+      <label class="custom-button">
+        <input type="file" id="upload-image" accept="image/*" hidden />
+        <span>⛧ Upload</span>
+      </label>
 
       <button id="reset-btn" class="custom-button">⛒ Reset</button>
       <button id="download-btn" class="custom-button">⇩ Download</button>
@@ -36,9 +35,7 @@
     <p>Built for the cult of vision 🔮</p>
   </footer>
 
-  <!-- Fabric.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>
