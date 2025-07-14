@@ -1,36 +1,18 @@
 const canvas = new fabric.Canvas('editor-canvas', {
-  selection: false,
   preserveObjectStacking: true
 });
 
 let pfpImage = null;
 let glassesImage = null;
-let originalSize = 512;
 
-function fitCanvasSize() {
+function fitCanvasContainer() {
   const container = document.getElementById('canvas-container');
-  const newSize = Math.min(window.innerWidth - 40, originalSize);
-  if (newSize <= 0) return;
-
-  const scaleFactor = newSize / canvas.getWidth();
-
-  canvas.setWidth(newSize);
-  canvas.setHeight(newSize);
-  container.style.width = ${newSize}px;
-
-  canvas.getObjects().forEach((obj) => {
-    obj.scaleX *= scaleFactor;
-    obj.scaleY *= scaleFactor;
-    obj.left *= scaleFactor;
-    obj.top *= scaleFactor;
-    obj.setCoords();
-  });
-
-  canvas.renderAll();
+  const maxSize = Math.min(window.innerWidth - 40, 512);
+  container.style.width = ${maxSize}px;
 }
-window.addEventListener('resize', fitCanvasSize);
+fitCanvasContainer();
+window.addEventListener('resize', fitCanvasContainer);
 
-// Upload image
 document.getElementById('upload-image').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -42,43 +24,48 @@ document.getElementById('upload-image').addEventListener('change', (e) => {
       pfpImage = null;
       glassesImage = null;
 
-      canvas.setWidth(originalSize);
-      canvas.setHeight(originalSize);
+      const aspectRatio = img.width / img.height;
+      let width = 512;
+      let height = Math.round(512 / aspectRatio);
+
+      if (height > 512) {
+        height = 512;
+        width = Math.round(512 * aspectRatio);
+      }
+
+      canvas.setWidth(width);
+      canvas.setHeight(height);
 
       img.set({
         originX: 'center',
         originY: 'center',
-        left: canvas.width / 2,
-        top: canvas.height / 2,
-        selectable: false,
+        left: width / 2,
+        top: height / 2,
+        selectable: true,
         hasControls: false,
         hasBorders: false
       });
 
-      const scale = Math.min(
-        canvas.width / img.width,
-        canvas.height / img.height
-      );
+      const scale = Math.min(width / img.width, height / img.height);
       img.scale(scale);
 
       pfpImage = img;
       canvas.add(pfpImage);
       canvas.sendToBack(pfpImage);
 
-      loadGlasses();
-      fitCanvasSize();
+      loadGlasses(width, height);
     });
   };
   reader.readAsDataURL(file);
 });
 
-function loadGlasses() {
+function loadGlasses(width, height) {
   fabric.Image.fromURL('assets/intuition-glasses.png', function (img) {
     img.set({
       originX: 'center',
       originY: 'center',
-      left: canvas.width / 2,
-      top: canvas.height / 2,
+      left: width / 2,
+      top: height / 2,
       hasControls: true,
       hasBorders: true,
       cornerStyle: 'circle',
@@ -98,9 +85,8 @@ document.getElementById('reset-btn').addEventListener('click', () => {
   canvas.clear();
   pfpImage = null;
   glassesImage = null;
-  canvas.setWidth(originalSize);
-  canvas.setHeight(originalSize);
-  fitCanvasSize();
+  canvas.setWidth(512);
+  canvas.setHeight(512);
 });
 
 document.getElementById('download-btn').addEventListener('click', () => {
@@ -115,7 +101,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
   const dataURL = canvas.toDataURL({
     format: 'png',
-    multiplier: 2
+    multiplier: 3 // High quality
   });
 
   const link = document.createElement('a');
@@ -126,12 +112,9 @@ document.getElementById('download-btn').addEventListener('click', () => {
   if (glassesImage) {
     glassesImage.set({ hasControls: true, hasBorders: true });
   }
-
   canvas.renderAll();
 });
 
 document.getElementById('mint-btn').addEventListener('click', () => {
   alert('🕯 Ritual minted to the void... (fake)');
 });
-
-fitCanvasSize();
