@@ -6,14 +6,13 @@ const canvas = new fabric.Canvas('editor-canvas', {
 let pfpImage = null;
 let glassesImage = null;
 
-// Load glasses on canvas start
 function loadGlasses() {
   fabric.Image.fromURL('assets/intuition-glasses.png', function (img) {
     img.set({
       originX: 'center',
       originY: 'center',
-      left: canvas.width / 2,
-      top: canvas.height / 2,
+      left: 256,
+      top: 256,
       hasControls: true,
       hasBorders: true,
       cornerStyle: 'circle',
@@ -25,14 +24,13 @@ function loadGlasses() {
     glassesImage = img;
     canvas.add(glassesImage);
     canvas.setActiveObject(glassesImage);
+    canvas.renderAll();
   });
 }
 
-// Resize canvas to fit screen
 function resizeCanvas() {
   const container = document.getElementById('canvas-container');
   const size = Math.min(window.innerWidth - 40, 512);
-
   const scaleFactor = size / canvas.getWidth();
 
   canvas.setWidth(size);
@@ -52,15 +50,19 @@ function resizeCanvas() {
 
 window.addEventListener('resize', resizeCanvas);
 
-// Upload image
 document.getElementById('upload-image').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
+
   reader.onload = function (f) {
+    if (!f.target.result) {
+      alert("Image failed to load.");
+      return;
+    }
+
     fabric.Image.fromURL(f.target.result, function (img) {
-      // Reset canvas
       canvas.clear();
       canvas.setWidth(512);
       canvas.setHeight(512);
@@ -70,8 +72,8 @@ document.getElementById('upload-image').addEventListener('change', (e) => {
       img.set({
         originX: 'center',
         originY: 'center',
-        left: canvas.width / 2,
-        top: canvas.height / 2,
+        left: 256,
+        top: 256,
         selectable: false,
         hasControls: false,
         hasBorders: false
@@ -83,12 +85,16 @@ document.getElementById('upload-image').addEventListener('change', (e) => {
 
       loadGlasses();
       resizeCanvas();
-    });
+    }, { crossOrigin: 'anonymous' });
   };
+
+  reader.onerror = function () {
+    alert("Failed to read image.");
+  };
+
   reader.readAsDataURL(file);
 });
 
-// Reset
 document.getElementById('reset-btn').addEventListener('click', () => {
   canvas.clear();
   canvas.setWidth(512);
@@ -99,7 +105,6 @@ document.getElementById('reset-btn').addEventListener('click', () => {
   resizeCanvas();
 });
 
-// Download
 document.getElementById('download-btn').addEventListener('click', () => {
   if (!pfpImage) return alert("Upload a PFP first.");
 
@@ -127,13 +132,13 @@ document.getElementById('download-btn').addEventListener('click', () => {
   canvas.renderAll();
 });
 
-// Fake mint
 document.getElementById('mint-btn').addEventListener('click', () => {
   alert('🕯 Ritual minted to the void... (fake)');
 });
 
-// Init
-canvas.setWidth(512);
-canvas.setHeight(512);
-loadGlasses();
-resizeCanvas();
+window.addEventListener('load', () => {
+  canvas.setWidth(512);
+  canvas.setHeight(512);
+  resizeCanvas();
+  loadGlasses();
+});
