@@ -1,71 +1,19 @@
 const canvas = new fabric.Canvas('editor-canvas', {
+  selection: false,
   preserveObjectStacking: true
 });
 
 let pfpImage = null;
 let glassesImage = null;
 
-function fitCanvasContainer() {
-  const container = document.getElementById('canvas-container');
-  const maxSize = Math.min(window.innerWidth - 40, 512);
-  container.style.width = ${maxSize}px;
-}
-fitCanvasContainer();
-window.addEventListener('resize', fitCanvasContainer);
-
-document.getElementById('upload-image').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function (f) {
-    fabric.Image.fromURL(f.target.result, function (img) {
-      canvas.clear();
-      pfpImage = null;
-      glassesImage = null;
-
-      const aspectRatio = img.width / img.height;
-      let width = 512;
-      let height = Math.round(512 / aspectRatio);
-
-      if (height > 512) {
-        height = 512;
-        width = Math.round(512 * aspectRatio);
-      }
-
-      canvas.setWidth(width);
-      canvas.setHeight(height);
-
-      img.set({
-        originX: 'center',
-        originY: 'center',
-        left: width / 2,
-        top: height / 2,
-        selectable: true,
-        hasControls: false,
-        hasBorders: false
-      });
-
-      const scale = Math.min(width / img.width, height / img.height);
-      img.scale(scale);
-
-      pfpImage = img;
-      canvas.add(pfpImage);
-      canvas.sendToBack(pfpImage);
-
-      loadGlasses(width, height);
-    });
-  };
-  reader.readAsDataURL(file);
-});
-
-function loadGlasses(width, height) {
+// Load glasses on canvas start
+function loadGlasses() {
   fabric.Image.fromURL('assets/intuition-glasses.png', function (img) {
     img.set({
       originX: 'center',
       originY: 'center',
-      left: width / 2,
-      top: height / 2,
+      left: canvas.width / 2,
+      top: canvas.height / 2,
       hasControls: true,
       hasBorders: true,
       cornerStyle: 'circle',
@@ -73,7 +21,6 @@ function loadGlasses(width, height) {
       cornerColor: '#aaa',
       transparentCorners: false
     });
-
     img.scale(0.5);
     glassesImage = img;
     canvas.add(glassesImage);
@@ -81,14 +28,78 @@ function loadGlasses(width, height) {
   });
 }
 
-document.getElementById('reset-btn').addEventListener('click', () => {
-  canvas.clear();
-  pfpImage = null;
-  glassesImage = null;
-  canvas.setWidth(512);
-  canvas.setHeight(512);
+// Resize canvas to fit screen
+function resizeCanvas() {
+  const container = document.getElementById('canvas-container');
+  const size = Math.min(window.innerWidth - 40, 512);
+
+  const scaleFactor = size / canvas.getWidth();
+
+  canvas.setWidth(size);
+  canvas.setHeight(size);
+  container.style.width = ${size}px;
+
+  canvas.getObjects().forEach(obj => {
+    obj.scaleX *= scaleFactor;
+    obj.scaleY *= scaleFactor;
+    obj.left *= scaleFactor;
+    obj.top *= scaleFactor;
+    obj.setCoords();
+  });
+
+  canvas.renderAll();
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+// Upload image
+document.getElementById('upload-image').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (f) {
+    fabric.Image.fromURL(f.target.result, function (img) {
+      // Reset canvas
+      canvas.clear();
+      canvas.setWidth(512);
+      canvas.setHeight(512);
+
+      const scale = Math.min(512 / img.width, 512 / img.height);
+      img.scale(scale);
+      img.set({
+        originX: 'center',
+        originY: 'center',
+        left: canvas.width / 2,
+        top: canvas.height / 2,
+        selectable: false,
+        hasControls: false,
+        hasBorders: false
+      });
+
+      pfpImage = img;
+      canvas.add(pfpImage);
+      canvas.sendToBack(pfpImage);
+
+      loadGlasses();
+      resizeCanvas();
+    });
+  };
+  reader.readAsDataURL(file);
 });
 
+// Reset
+document.getElementById('reset-btn').addEventListener('click', () => {
+  canvas.clear();
+  canvas.setWidth(512);
+  canvas.setHeight(512);
+  pfpImage = null;
+  glassesImage = null;
+  loadGlasses();
+  resizeCanvas();
+});
+
+// Download
 document.getElementById('download-btn').addEventListener('click', () => {
   if (!pfpImage) return alert("Upload a PFP first.");
 
@@ -101,7 +112,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
   const dataURL = canvas.toDataURL({
     format: 'png',
-    multiplier: 3 // High quality
+    multiplier: 2
   });
 
   const link = document.createElement('a');
@@ -112,9 +123,17 @@ document.getElementById('download-btn').addEventListener('click', () => {
   if (glassesImage) {
     glassesImage.set({ hasControls: true, hasBorders: true });
   }
+
   canvas.renderAll();
 });
 
+// Fake mint
 document.getElementById('mint-btn').addEventListener('click', () => {
   alert('🕯 Ritual minted to the void... (fake)');
 });
+
+// Init
+canvas.setWidth(512);
+canvas.setHeight(512);
+loadGlasses();
+resizeCanvas();
