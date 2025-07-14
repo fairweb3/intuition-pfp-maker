@@ -1,25 +1,7 @@
 const canvas = new fabric.Canvas('editor-canvas', {
   selection: false,
   preserveObjectStacking: true
-});
-
-let pfpImage = null;
-let glassesImage = null;
-
-function loadGlasses() {
-  fabric.Image.fromURL('assets/intuition-glasses.png', function (img) {
-    img.set({
-      originX: 'center',
-      originY: 'center',
-      left: 256,
-      top: 256,
-      hasControls: true,
-      hasBorders: true,
-      cornerStyle: 'circle',
-      borderColor: '#aaa',
-      cornerColor: '#aaa',
-      transparentCorners: false
-    });
+})
     img.scale(0.5);
     glassesImage = img;
     canvas.add(glassesImage);
@@ -48,15 +30,7 @@ function resizeCanvas() {
   canvas.renderAll();
 }
 
-window.addEventListener('resize', resizeCanvas);
-
-document.getElementById('upload-image').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = function (f) {
+win
     if (!f.target.result) {
       alert("Image failed to load.");
       return;
@@ -88,12 +62,7 @@ document.getElementById('upload-image').addEventListener('change', (e) => {
     }, { crossOrigin: 'anonymous' });
   };
 
-  reader.onerror = function () {
-    alert("Failed to read image.");
-  };
-
-  reader.readAsDataURL(file);
-});
+  reader.onerr
 
 document.getElementById('reset-btn').addEventListener('click', () => {
   canvas.clear();
